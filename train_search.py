@@ -64,12 +64,18 @@ else:
     CIFAR_CLASSES = 10
     data_folder = 'cifar-10-batches-py'
 def main():
+	# check for gpu device 
     if not torch.cuda.is_available():
         logging.info('No GPU device available')
         sys.exit(1)
+    # set random seed
     np.random.seed(args.seed)
+    # works faster on hardware if input size
+    # is constant
     cudnn.benchmark = True
+    # same as np seed
     torch.manual_seed(args.seed)
+    # to choose between backend cunn or cudnn
     cudnn.enabled=True
     torch.cuda.manual_seed(args.seed)
     logging.info("args = %s", args)
@@ -82,11 +88,13 @@ def main():
         train_data = dset.CIFAR100(root=args.tmp_data_dir, train=True, download=True, transform=train_transform)
     else:
         train_data = dset.CIFAR10(root=args.tmp_data_dir, train=True, download=True, transform=train_transform)
-
+    # num_train = number of samples of train_data
+    # indices =  list of numbers [0, num_train]
+    # split = number of samples in training dataset
     num_train = len(train_data)
     indices = list(range(num_train))
     split = int(np.floor(args.train_portion * num_train))
-
+    # dataloader gives an iterator over dataset
     train_queue = torch.utils.data.DataLoader(
         train_data, batch_size=args.batch_size,
         sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[:split]),
